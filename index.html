@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Use Calculator</title>
+  <style>
+    body {
+      background-color: #e0f7fa;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      max-width: 600px;
+      width: 90%;
+    }
+    h2 {
+      color: #00796b;
+      text-align: center;
+    }
+    select, input, button, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      background-color: #4bcbd9;
+      color:rgb(2, 46, 48);
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #004d40;
+    }
+    .output {
+      margin-top: 10px;
+      padding: 10px;
+      background: #e0f2f1;
+      border-radius: 6px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Multi-Use Calculator</h2>
+    <select id="modeSelector" onchange="updateForm()">
+      <option value="trig">Trig Calculator</option>
+      <option value="arc">Geometry Helper</option>
+      <option value="macro">Macro Evaluator</option>
+    </select>
+
+    <div id="inputForm"></div>
+
+    <button id="btn-primary"  onclick="solve()">Solve</button>
+    <button onclick="resetVars()" id="resetBtn" style="display:none; margin-top: 5px;">Reset Variables</button>
+    <div class="output" id="outputBox"></div>
+  </div>
+
+  <script>
+    const variables = new Array(1000).fill(null);
+
+    function updateForm() {
+      const mode = document.getElementById("modeSelector").value;
+      const form = document.getElementById("inputForm");
+      const output = document.getElementById("outputBox");
+      const resetBtn = document.getElementById("resetBtn");
+      output.innerHTML = "";
+
+      if (mode === "trig") {
+        resetBtn.style.display = "none";
+        form.innerHTML = `
+          <input id="angle" placeholder="Angle A (deg)" type="number">
+          <input id="sideB" placeholder="Side b" type="number">
+        `;
+      } else if (mode === "arc") {
+        resetBtn.style.display = "none";
+        form.innerHTML = `
+          <input id="startX" placeholder="Start X" type="number">
+          <input id="startY" placeholder="Start Y" type="number">
+          <input id="endX" placeholder="End X" type="number">
+          <input id="endY" placeholder="End Y" type="number">
+          <input id="radius" placeholder="Radius (optional)" type="number">
+          <input id="height" placeholder="Chord Height (optional)" type="number">
+        `;
+      } else if (mode === "macro") {
+        resetBtn.style.display = "block";
+        form.innerHTML = `
+          <textarea id="macroInput" placeholder="#100 = 4 * COS[30] + 2\n#101 = SQR[#100]" rows="6" style="width: 100%; font-family: monospace;"></textarea>
+        `;
+      }
+    }
+
+    function resetVars() {
+      variables.fill(null);
+      document.getElementById("outputBox").innerText = "Variables have been reset.";
+    }
+
+    function evaluateExpression(expr) {
+      const safeExpr = expr.replace(/#(\d+)/g, (_, num) => {
+        const val = variables[parseInt(num)] ?? 0;
+        return `(${val})`;
+      })
+      .replace(/SIN\[/gi, 'Math.sin(degToRad(')
+      .replace(/COS\[/gi, 'Math.cos(degToRad(')
+      .replace(/TAN\[/gi, 'Math.tan(degToRad(')
+      .replace(/ATAN2?\[/gi, 'Math.atan(')
+      .replace(/SQR\[/gi, 'Math.sqrt(')
+      .replace(/ABS\[/gi, 'Math.abs(')
+      .replace(/]/g, ')');
+      return eval(safeExpr);
+    }
+
+    function degToRad(deg) {
+      return deg * Math.PI / 180;
+    }
+
+    function solve() {
+      const mode = document.getElementById("modeSelector").value;
+      const output = document.getElementById("outputBox");
+      output.innerHTML = "Calculating...";
+
+      setTimeout(() => {
+        if (mode === "trig") {
+          const A = parseFloat(document.getElementById("angle").value);
+          const b = parseFloat(document.getElementById("sideB").value);
+          const A_rad = A * Math.PI / 180;
+          const a = b * Math.tan(A_rad);
+          output.innerText = `Given Angle A = ${A}°, Side b = ${b}\n→ Calculated Side a (opp) = ${a.toFixed(4)}`;
+        } else if (mode === "arc") {
+          const sx = parseFloat(document.getElementById("startX").value);
+          const sy = parseFloat(document.getElementById("startY").value);
+          const ex = parseFloat(document.getElementById("endX").value);
+          const ey = parseFloat(document.getElementById("endY").value);
+          const dx = ex - sx;
+          const dy = ey - sy;
+          const chord = Math.hypot(dx, dy);
+          const r = parseFloat(document.getElementById("radius").value);
+          const h = parseFloat(document.getElementById("height").value);
+          const angle = 2 * Math.asin(chord / (2 * r));
+          const arcLength = angle * r;
+          output.innerText = `Chord = ${chord.toFixed(4)}\nArc Angle = ${(angle * 180 / Math.PI).toFixed(2)}°\nArc Length = ${arcLength.toFixed(4)}`;
+        } else if (mode === "macro") {
+          const lines = document.getElementById("macroInput").value.split('\n');
+          const results = [];
+          for (const line of lines) {
+            const cleaned = line.trim();
+            if (!cleaned) continue;
+            const match = cleaned.match(/^#(\d+)\s*=\s*(.+)$/);
+            if (match) {
+              const index = parseInt(match[1]);
+              const expr = match[2];
+              try {
+                const val = evaluateExpression(expr);
+                variables[index] = val;
+                results.push(`#${index} = ${val}`);
+              } catch (e) {
+                results.push(`Error evaluating: ${cleaned}`);
+              }
+            } else {
+              results.push(`Invalid syntax: ${cleaned}`);
+            }
+          }
+          results.push("\n--- Current Variable States ---");
+          for (let i = 0; i < variables.length; i++) {
+            if (variables[i] !== null) results.push(`#${i} = ${variables[i]}`);
+          }
+          output.innerText = results.join('\n');
+        }
+      }, 300);
+    }
+
+    window.onload = updateForm;
+  </script>
+</body>
+</html>
