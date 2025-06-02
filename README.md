@@ -87,7 +87,6 @@ Planned structure includes:
 ## 📫 Contact
 
 Project Lead: [@cnc-n3r4](https://github.com/cnc-n3r4)  
-Website (coming soon): [n3r4.xyz](https://n3r4.xyz)  
 Interested in helping? Submit an issue or pull request!
 
 ---
