@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>n3r4Mach - Configuration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+    <script type="text/javascript" src="/eel.js" defer></script>
+    <script>
+        async function loadConfig() {
+            try {
+                const config = await eel.load_config()();
+                document.getElementById('save-location').value = config.save_location || '';
+                document.getElementById('data-location').value = config.data_location || '';
+                document.getElementById('remap-suffix').value = config.remap_suffix || '_remapped';
+                document.getElementById('toolchange-codes').value = config.toolchange_codes || 'M6,M06,M106';
+                document.getElementById('height-offset-codes').value = config.height_offset_codes || 'G43,G243';
+                document.getElementById('diameter-comp-codes').value = config.diameter_comp_codes || 'G41,G42';
+                document.getElementById('cancel-comp-code').value = config.cancel_comp_code || 'G40';
+                for (let i = 0; i < 5; i++) {
+                    document.getElementById(`search-term-${i}`).value = config.search_terms?.[i] || '';
+                    document.getElementById(`search-enabled-${i}`).checked = config.search_enabled?.[i] ?? true;
+                }
+                document.getElementById('comments').checked = config.features?.comments ?? false;
+                document.getElementById('thd').checked = config.features?.thd ?? false;
+                document.getElementById('thd-h-match').checked = config.features?.thd_h_match ?? false;
+                document.getElementById('thd-d-match').checked = config.features?.thd_d_match ?? false;
+                document.getElementById('speeds').checked = config.features?.speeds ?? false;
+                document.getElementById('speeds-tap-m5').checked = config.features?.speeds_tap_m5 ?? false;
+            } catch (e) {
+                alert(`Error loading config: ${e.message}`);
+            }
+        }
+
+        async function saveConfig() {
+            const config = {
+                save_location: document.getElementById('save-location').value,
+                data_location: document.getElementById('data-location').value,
+                remap_suffix: document.getElementById('remap-suffix').value,
+                toolchange_codes: document.getElementById('toolchange-codes').value,
+                height_offset_codes: document.getElementById('height-offset-codes').value,
+                diameter_comp_codes: document.getElementById('diameter-comp-codes').value,
+                cancel_comp_code: document.getElementById('cancel-comp-code').value,
+                search_terms: [
+                    document.getElementById('search-term-0').value,
+                    document.getElementById('search-term-1').value,
+                    document.getElementById('search-term-2').value,
+                    document.getElementById('search-term-3').value,
+                    document.getElementById('search-term-4').value
+                ],
+                search_enabled: [
+                    document.getElementById('search-enabled-0').checked,
+                    document.getElementById('search-enabled-1').checked,
+                    document.getElementById('search-enabled-2').checked,
+                    document.getElementById('search-enabled-3').checked,
+                    document.getElementById('search-enabled-4').checked
+                ],
+                features: {
+                    comments: document.getElementById('comments').checked,
+                    thd: document.getElementById('thd').checked,
+                    thd_h_match: document.getElementById('thd-h-match').checked,
+                    thd_d_match: document.getElementById('thd-d-match').checked,
+                    speeds: document.getElementById('speeds').checked,
+                    speeds_tap_m5: document.getElementById('speeds-tap-m5').checked
+                }
+            };
+            try {
+                const result = await eel.save_config(config)();
+                if (result.success) {
+                    alert('Configuration saved successfully');
+                } else {
+                    alert(`Error: ${result.error}`);
+                }
+            } catch (e) {
+                alert(`Error: ${e.message}`);
+            }
+        }
+
+        function selectFolder(id) {
+            eel.select_folder()(path => {
+                if (path) {
+                    document.getElementById(id).value = path;
+                }
+            });
+        }
+
+        function navigateHome() {
+            console.log('Fetching index.html content');
+            try {
+                fetch('index.html')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Failed to fetch index.html: ${response.statusText}`);
+                        }
+                        return response.text();
+                    })
+                    .then(html => {
+                        document.body.innerHTML = html;
+                        document.title = 'n3r4Mach - CNC Toolkit';
+                        console.log('Loaded index.html content');
+                    })
+                    .catch(e => {
+                        console.error('Navigation error:', e);
+                        alert(`Navigation error: ${e.message}`);
+                    });
+            } catch (e) {
+                console.error('Navigation error:', e);
+                alert(`Navigation error: ${e.message}`);
+            }
+        }
+
+        window.onload = loadConfig;
+    </script>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Configuration</h1>
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Folder Settings</h2>
+            <div class="mb-4">
+                <label class="block text-gray-600 mb-1">Save Location (for files and tool remaps):</label>
+                <div class="flex">
+                    <input id="save-location" type="text" class="border rounded-lg p-2 w-full mr-2">
+                    <button onclick="selectFolder('save-location')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Browse</button>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-600 mb-1">Data Location:</label>
+                <div class="flex">
+                    <input id="data-location" type="text" class="border rounded-lg p-2 w-full mr-2">
+                    <button onclick="selectFolder('data-location')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Browse</button>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-600 mb-1">Tool Remap File Suffix:</label>
+                <input id="remap-suffix" type="text" placeholder="e.g., _remapped" class="border rounded-lg p-2 w-full">
+            </div>
+
+            <h2 class="text-xl font-semibold text-gray-700 mb-4 mt-6">Search Terms</h2>
+            <div class="space-y-2 mb-4">
+                <div class="flex items-center">
+                    <input id="search-enabled-0" type="checkbox" class="mr-2">
+                    <input id="search-term-0" type="text" class="border rounded-lg p-2 w-full">
+                </div>
+                <div class="flex items-center">
+                    <input id="search-enabled-1" type="checkbox" class="mr-2">
+                    <input id="search-term-1" type="text" class="border rounded-lg p-2 w-full">
+                </div>
+                <div class="flex items-center">
+                    <input id="search-enabled-2" type="checkbox" class="mr-2">
+                    <input id="search-term-2" type="text" class="border rounded-lg p-2 w-full">
+                </div>
+                <div class="flex items-center">
+                    <input id="search-enabled-3" type="checkbox" class="mr-2">
+                    <input id="search-term-3" type="text" class="border rounded-lg p-2 w-full">
+                </div>
+                <div class="flex items-center">
+                    <input id="search-enabled-4" type="checkbox" class="mr-2">
+                    <input id="search-term-4" type="text" class="border rounded-lg p-2 w-full">
+                </div>
+            </div>
+
+            <h2 class="text-xl font-semibold text-gray-700 mb-4 mt-6">G-code Settings</h2>
+            <div class="mb-4">
+                <label class="block text-gray-600 mb-1">Tool Change Codes (comma-separated):</label>
+                <input id="toolchange-codes" type="text" class="border rounded-lg p-2 w-full">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-600 mb-1">Height Offset Codes:</label>
+                <input id="height-offset-codes" type="text" class="border rounded-lg p-2 w-full">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-600 mb-1">Diameter Comp Codes:</label>
+                <input id="diameter-comp-codes" type="text" class="border rounded-lg p-2 w-full">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-600 mb-1">Cancel Comp Code:</label>
+                <input id="cancel-comp-code" type="text" class="border rounded-lg p-2 w-full">
+            </div>
+
+            <h2 class="text-xl font-semibold text-gray-700 mb-4 mt-6">Parsing Modules</h2>
+            <div class="space-y-2">
+                <label class="flex items-center">
+                    <input id="comments" type="checkbox" class="mr-2">
+                    <span>Extract Comments</span>
+                </label>
+                <label class="flex items-center">
+                    <input id="thd" type="checkbox" class="mr-2">
+                    <span>Extract T/H/D</span>
+                </label>
+                <label class="flex items-center ml-6">
+                    <input id="thd-h-match" type="checkbox" class="mr-2">
+                    <span>H must match T <span class="text-red-600 text-sm">(⚠️ Disabling may be unsafe)</span></span>
+                </label>
+                <label class="flex items-center ml-6">
+                    <input id="thd-d-match" type="checkbox" class="mr-2">
+                    <span>D must match T</span>
+                </label>
+                <label class="flex items-center">
+                    <input id="speeds" type="checkbox" class="mr-2">
+                    <span>Extract Speeds</span>
+                </label>
+                <label class="flex items-center ml-6">
+                    <input id="speeds-tap-m5" type="checkbox" class="mr-2">
+                    <span>Allow M5 with Tapping Cycle</span>
+                </label>
+            </div>
+
+            <div class="mt-6 text-center">
+                <button onclick="saveConfig()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Save Configuration</button>
+                <a onclick="navigateHome()" class="ml-4 text-blue-600 underline hover:text-blue-800 cursor-pointer">Back to Home</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

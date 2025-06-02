@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>n3r4Mach - Tool Remapper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+        }
+        #drop-area {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            background-color: #fff;
+            border-radius: 8px;
+        }
+        #drop-area.dragover {
+            background-color: #e0f7fa;
+            border-color: #0288d1;
+        }
+    </style>
+    <script type="text/javascript" src="/eel.js" defer></script>
+    <script>
+        window.onload = function() {
+            console.log('Initializing remap.html');
+            if (typeof eel === 'undefined' || typeof eel._init !== 'function') {
+                console.error('Eel not initialized');
+                document.getElementById('output').innerHTML = `<p class="text-red-600">❌ Error: Eel not initialized</p>`;
+                return;
+            }
+            eel._init();
+            console.log('Eel initialized, setting up event listeners');
+
+            const dropArea = document.getElementById('drop-area');
+            dropArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropArea.classList.add('dragover');
+            });
+            dropArea.addEventListener('dragleave', () => {
+                dropArea.classList.remove('dragover');
+            });
+            dropArea.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                dropArea.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (file) {
+                    try {
+                        const result = await eel.save_temp_file(file.name, await file.text())();
+                        if (result.success) {
+                            document.getElementById('file-status').innerText = `📂 ${file.name}`;
+                            analyzeFile(file.name);
+                        } else {
+                            document.getElementById('output').innerHTML = `<p class="text-red-600">❌ Error: ${result.error}</p>`;
+                        }
+                    } catch (err) {
+                        console.error('Drop file error:', err);
+                        document.getElementById('output').innerHTML = `<p class="text-red-600">❌ Error: ${err.message}</p>`;
+                    }
+                }
+            });
+            dropArea.addEventListener('click', () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.nc,.tap,.txt';
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        try {
+                            const result = await eel.save_temp_file(file.name, await file.text())();
+                            if (result.success) {
+                                document.getElementById('file-status').innerText = `📂 ${file.name}`;
+                                analyzeFile(file.name);
+                            } else {
+                                document.getElementById('output').innerHTML = `<p class="text-red-600">❌ Error: ${result.error}</p>`;
+                            }
+                        } catch (err) {
+                            console.error('File select error:', err);
+                            document.getElementById('output').innerHTML = `<p class="text-red-600">❌ Error: ${err.message}</p>`;
+                        }
+                    }
+                };
+                input.click();
+            });
+        };
+
+        async function analyzeFile(filename) {
+            const outputDiv = document.getElementById('output');
+            const remapTable = document.getElementById('remap-table').querySelector('tbody');
+            outputDiv.innerHTML = '';
+            remapTable.innerHTML = '';
+            try {
+                if (typeof eel.analyze_nc_file !== 'function') {
+                    console.error('eel.analyze_nc_file is not a function');
+                    throw new Error('Eel function analyze_nc_file not available');
+                }
+                const tools = await eel.analyze_nc_file(`temp/${filename}`)();
+                if (tools.error) {
+                    outputDiv.innerHTML = `<p class="text-red-600">❌ Error: ${tools.error}</p>`;
+                    return;
+                }
+                outputDiv.innerHTML = `<p class="text-green-600">✅ Found ${tools.length} tool(s)</p>`;
+                tools.forEach(tool => {
+                    const row = document.createElement('tr');
+                    const dDisplay = tool.d.length ? tool.d.map(d => `D${d.value} (count ${d.count})`).join(', ') : 'None';
+                    row.innerHTML = `
+                        <td class="border px-4 py-2">T${tool.t}</td>
+                        <td class="border px-4 py-2">H${tool.h}</td>
+                        <td class="border px-4 py-2">${dDisplay}</td>
+                        <td class="border px-4 py-2">
+                            <input type="number" min="1" value="${tool.t}" data-tool="${tool.t}" class="border rounded p-1 w-full">
+                        </td>
+                    `;
+                    remapTable.appendChild(row);
+                });
+            } catch (e) {
+                console.error('Analyze file error:', e);
+                outputDiv.innerHTML = `<p class="text-red-600">❌ Error: ${e.message}</p>`;
+            }
+        }
+
+        async function remapAndSave() {
+            const filename = document.getElementById('file-status').innerText.replace('📂 ', '');
+            if (!filename) {
+                document.getElementById('output').innerHTML = `<p class="text-red-600">❌ No file loaded</p>`;
+                return;
+            }
+            const remapMap = {};
+            const inputs = document.querySelectorAll('#remap-table input');
+            inputs.forEach(input => {
+                const oldT = input.getAttribute('data-tool');
+                const newT = parseInt(input.value);
+                if (!isNaN(newT)) {
+                    remapMap[oldT] = { new_t: newT };
+                }
+            });
+            try {
+                const config = await eel.load_config()();
+                const outputFile = `output/${filename.replace(/\.[^/.]+$/, '')}${config.remap_suffix || '_remapped'}.nc`;
+                const result = await eel.remap_and_save(remapMap, `temp/${filename}`, outputFile)();
+                const outputDiv = document.getElementById('output');
+                if (result.success) {
+                    outputDiv.innerHTML = `<p class="text-green-600">✅ Remapped file saved to ${outputFile}</p>`;
+                } else {
+                    outputDiv.innerHTML = `<p class="text-red-600">❌ Error: ${result.error}</p>`;
+                }
+            } catch (e) {
+                console.error('Remap and save error:', e);
+                document.getElementById('output').innerHTML = `<p class="text-red-600">❌ Error: ${e.message}</p>`;
+            }
+        }
+
+        function navigateHome() {
+            console.log('Fetching index.html content');
+            try {
+                fetch('index.html')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Failed to fetch index.html: ${response.statusText}`);
+                        }
+                        return response.text();
+                    })
+                    .then(html => {
+                        document.body.innerHTML = html;
+                        document.title = 'n3r4Mach - CNC Toolkit';
+                        console.log('Loaded index.html content');
+                    })
+                    .catch(e => {
+                        console.error('Navigation error:', e);
+                        document.getElementById('output').innerHTML = `<p class="text-red-600">❌ Navigation error: ${e.message}</p>`;
+                    });
+            } catch (e) {
+                console.error('Navigation error:', e);
+                document.getElementById('output').innerHTML = `<p class="text-red-600">❌ Navigation error: ${e.message}</p>`;
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Tool Remapper</h1>
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <div id="drop-area" class="cursor-pointer">
+                <p class="text-gray-600">Drag and drop an NC file here or click to select</p>
+            </div>
+            <p id="file-status" class="text-blue-600 mt-4">No file loaded</p>
+            <button onclick="analyzeFile(document.getElementById('file-status').innerText.replace('📂 ', ''))" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Analyze File</button>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Tool Remapping</h2>
+            <table id="remap-table" class="w-full border-collapse">
+                <thead>
+                    <tr>
+                        <th class="border px-4 py-2">Tool (T)</th>
+                        <th class="border px-4 py-2">Height (H)</th>
+                        <th class="border px-4 py-2">D# (and count)</th>
+                        <th class="border px-4 py-2">New Tool Number</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button onclick="remapAndSave()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Remap & Save</button>
+        </div>
+        <div id="output" class="bg-white p-6 rounded-lg shadow-md mb-8"></div>
+        <div class="text-center">
+            <a onclick="navigateHome()" class="text-blue-600 underline hover:text-blue-800 cursor-pointer">Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "save_location": "C:/xampp/htdocs/n3r4Mach/test_nc_files",
+  "data_location": "C:/xampp/htdocs/n3r4Mach/logs",
+  "remap_suffix": "_remapped",
+  "toolchange_codes": "M6,M06,M106",
+  "height_offset_codes": "G43,G243",
+  "diameter_comp_codes": "G41,G42",
+  "cancel_comp_code": "G40",
+  "search_terms": [
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "search_enabled": [
+    true,
+    true,
+    true,
+    true,
+    true
+  ],
+  "features": {
+    "comments": false,
+    "thd": false,
+    "thd_h_match": false,
+    "thd_d_match": false,
+    "speeds": false,
+    "speeds_tap_m5": false
+  }
+}

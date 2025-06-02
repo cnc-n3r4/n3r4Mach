@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Multi-Use Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
       background-color: #e0f7fa;
@@ -66,10 +67,37 @@
     <button id="btn-primary"  onclick="solve()">Solve</button>
     <button onclick="resetVars()" id="resetBtn" style="display:none; margin-top: 5px;">Reset Variables</button>
     <div class="output" id="outputBox"></div>
+    <div class="text-center">
+    <a onclick="navigateHome()" class="ml-4 text-blue-600 underline hover:text-blue-800 cursor-pointer">Back to Home</a>
   </div>
-
+  </div>
   <script>
     const variables = new Array(1000).fill(null);
+    
+    function navigateHome() {
+        console.log('Fetching index.html content');
+        try {
+            fetch('index.html')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch index.html: ${response.statusText}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    document.body.innerHTML = html;
+                    document.title = 'n3r4Mach - CNC Toolkit';
+                    console.log('Loaded index.html content');
+                })
+                .catch(e => {
+                    console.error('Navigation error:', e);
+                    alert(`Navigation error: ${e.message}`);
+                });
+        } catch (e) {
+            console.error('Navigation error:', e);
+            alert(`Navigation error: ${e.message}`);
+        }
+    }    
 
     function updateForm() {
       const mode = document.getElementById("modeSelector").value;
@@ -137,7 +165,7 @@
           const b = parseFloat(document.getElementById("sideB").value);
           const A_rad = A * Math.PI / 180;
           const a = b * Math.tan(A_rad);
-          output.innerText = `Given Angle A = ${A}°, Side b = ${b}\n→ Calculated Side a (opp) = ${a.toFixed(4)}`;
+          output.innerText = `Given Angle A = ${A}°, Side b = ${b}\n? Calculated Side a (opp) = ${a.toFixed(4)}`;
         } else if (mode === "arc") {
           const sx = parseFloat(document.getElementById("startX").value);
           const sy = parseFloat(document.getElementById("startY").value);

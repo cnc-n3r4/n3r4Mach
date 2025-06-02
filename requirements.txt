@@ -1,0 +1,6 @@
+eel
+pyperclip
+flask
+filetype
+watchdog
+pandas

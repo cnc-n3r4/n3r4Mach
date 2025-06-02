@@ -6,66 +6,67 @@
 
 ## 🎯 Purpose
 
-n3r4Mach is a machinist-focused toolkit that brings together CNC calculators, reference libraries, program analyzers, and G-code tools into a single, easy-to-use desktop app — powered by Python, and presented in a clean, browser-style interface. Giving machinists an easy to use, no CAD/CAM sofware needed, way to modify posted programs and not understand the underlying g-code. You don't need to run a server, install Apache, or know web development. Just open the app and go.
+n3r4Mach is a machinist-focused toolkit that brings together CNC calculators, reference libraries, program analyzers, and G-code tools into a single, easy-to-use desktop app — powered by Python, and presented in a clean, browser-style interface.
+
+It supports:
+- Tool remapping with collision protection
+- Macro calculator tools
+- Future drill/tap analyzers, backplotting, and more
 
 ---
 
-## 🔧 Key Tools (in development)
+## 💡 Technologies
 
-- 🛠️ **Tool Remapper**  
-  Remap T/H/D tool numbers in NC files based on a selected tool list — great for cleaning up posted NC files to match existing tool magazine/carosels.
-
-- 🧮 **Trig & Geometry Calculator**  
-  Solve right triangles, bolt circles, arc lengths, and other common shop math problems.
-
-- 📐 **Macro Evaluator**  
-  Parse and evaluate Fanuc-style macro expressions like `#100 = COS[30] + 2`. Supports variable memory and math functions.
-
-- 📂 **File Drop Support (coming soon)**  
-  Drag NC files directly into the interface to run checks, extract tooling info, or apply program modifications and changes.
-  
+- Python + Eel
+- HTML/CSS + Tailwind
+- Local-first, no server setup required
 
 ---
 
-## 🧱 Roadmap
+## 👥 Special Thanks
 
-- 🕳️ **Tap & Drill Validator**  
-  Verify that every tap cycle has a correctly sized drill operation beforehand, with pitch and feed rate analysis.
+Huge thanks to [@SohaFarhana05](https://github.com/SohaFarhana05) for jump-starting the interface and contributing the calculator :)
 
-- ✂️ **Operation Reorderer**  
-  Cut/paste entire tool blocks safely. Maintain correct H/D offset logic, spindle conditions, and clearance.
-
-- 🧠 **G-code Intelligence Linter**  
-  Warn about missing spindle starts, wrong tool calls, or improper macro math. CNC-aware diagnostics.
-
-- 🧰 **Tool Data Dashboard**  
-  Visual overview of all tools used in a file: descriptions, offsets, speeds, feeds, and wear comp settings.
-
-- 🌀 **Backplot Viewer**  
-  Basic G-code backplot with 2D move visualization, warnings for unsafe moves, and toolpath summary.
 
 ---
 
-## 🖥️ Architecture
+## 🚀 How to Use
 
-- **Frontend**:  
-  HTML, CSS, and JavaScript for the interface  
+### 1. 📦 Install Requirements
+Run this in your terminal:
+```
+pip install -r requirements.txt
+```
 
-- **Backend**:  
-  Python (standalone) — no server required  
-  Python modules are exposed to the frontend via [Eel](https://github.com/python-eel/python-eel)
+### 2. ▶️ Launch the App
+Start the Eel app locally:
+```
+python eel_app/app.py
+```
 
-- **Testing and Prototyping**:  
-  Jupyter Notebooks may be used for math logic and parsing prototypes, but the final tools run in a desktop GUI
+### 3. 🧰 Use the Tools
+
+- **Remap Tool:** Drag and drop a `.nc` file and reassign tool numbers safely.
+- **Calculator:** Basic trig and machining calculations.
+- More utilities are planned — like a backplot viewer and cycle analyzers.
+
+> No internet required. Runs locally in a desktop browser window.
 
 ---
 
-## 🧑‍🤝‍🧑 Contributing
+## 🧩 Requirements
 
-We welcome help! Whether you write in Python, HTML, or just want to test tools — there’s room here.
+Make sure you have the following Python packages installed:
+- `eel`
+- `pyperclip`
+- `flask`
+- `filetype`
+- `watchdog`
+- `pandas`
 
-Planned structure includes:
+If you're using a fresh Python environment, just run:
 
+<<<<<<< Updated upstream
 - Modular tools (each in their own folder)
 - UI dropdown/tabs to switch modes
 - Drag-and-drop NC file support
@@ -92,3 +93,8 @@ Interested in helping? Submit an issue or pull request!
 ---
 
 > 🦾 *Built for real-world application.*
+=======
+```
+pip install -r requirements.txt
+```
+>>>>>>> Stashed changes

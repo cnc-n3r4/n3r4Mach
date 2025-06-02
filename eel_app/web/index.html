@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>n3r4Mach - CNC Toolkit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+        }
+        .tab {
+            transition: all 0.3s ease;
+        }
+        .tab:hover:not(.disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .tab.disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-6 text-center">n3r4Mach CNC Toolkit</h1>
+        <p class="text-lg text-gray-600 mb-8 text-center">A modular, machinist-focused toolkit for CNC programming and analysis</p>
+        
+        <div class="flex space-x-4 mb-8 overflow-x-auto">
+            <a href="config.html" class="tab bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg text-center hover:bg-blue-700">Config</a>
+            <a href="calculator.html" class="tab bg-green-600 text-white font-semibold py-3 px-6 rounded-lg text-center hover:bg-green-700">Calculator</a>
+            <a href="remap.html" class="tab bg-purple-600 text-white font-semibold py-3 px-6 rounded-lg text-center hover:bg-purple-700">Tool Remapper</a>
+            <span class="tab bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg text-center disabled" title="Coming Soon">Comments</span>
+            <span class="tab bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg text-center disabled" title="Coming Soon">Speeds</span>
+            <span class="tab bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg text-center disabled" title="Coming Soon">Tap & Drill Validator</span>
+            <span class="tab bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg text-center disabled" title="Coming Soon">Operation Reorderer</span>
+            <span class="tab bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg text-center disabled" title="Coming Soon">G-code Intelligence Linter</span>
+            <span class="tab bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg text-center disabled" title="Coming Soon">Tool Data Dashboard</span>
+            <span class="tab bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg text-center disabled" title="Coming Soon">Backplot Viewer</span>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md text-center">
+            <p class="text-gray-600">Select a tab above to configure settings, use the calculator, or remap tools.</p>
+            <p class="text-gray-600 mt-2">Other features are coming soon!</p>
+        </div>
+
+        <footer class="mt-12 text-center text-gray-500">
+            <p>Built with ?
